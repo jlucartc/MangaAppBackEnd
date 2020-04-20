@@ -1,0 +1,26 @@
+----------- Errors or exceptions related to operations -----------
+
+1 - Invalid request (request was sent without data, data was sent with wrong name, etc.)
+2 - Malformed JSON
+3 - Network problems, database problems( timeout, connection failure, unreacheable database, etc.)
+4 - Invalid query fields(string too long, field has integer value instead of string, missing fields, non-unique primary key, etc.)
+
+OBS: malformed query shouldn't be a problem, since all queries should be tested
+before going to production, and they cannot change for each method call.
+
+Types 1 and 2 stay in the same category, since they make the request unprocessable as a whole.
+
+Types 3 and 4 could stay in the same category, since some part of the data may still
+be able to be processed. Considering that an insert operation may be made in little pieces, where each piece is atomic, it doesn't matter if some pieces couldn't be inserted. Nevertheless, type 3 should be distinguished from type 4 for debugging purposes, so that the user may know if his request failed because he sent invalid data or because the server couldn't handle it.
+
+From this, we get these types of return status:
+
+0 - Method was executed flawlessly
+1 - Some data was invalid, due only to invalid data.
+2 - Some data was invalid, due only to internal errors.
+3 - Some data was invalid, due to the two previous reasons.
+4 - The request can't be comprehended, so it's totally invalid.
+
+----------- Error Handling -----------
+Maybe it's a good idea to use Laravel's Handler instead of using try\catch.
+The code might get more readable this way.
