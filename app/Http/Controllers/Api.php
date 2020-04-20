@@ -10,6 +10,8 @@ use App\Pages;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use App\Jobs\InsertUpdates;
 
 class Api extends Controller
 {
@@ -436,6 +438,10 @@ class Api extends Controller
 			# validade their pages.
 			foreach($validChapters as $validChapter){
 
+				# Begins transaction so that queries may be rolled
+				# back in case of error.
+				DB::beginTransaction();
+
 				$newChapter = new Chapters();
 
 				$newChapter->Number = $validChapter->Number;
@@ -518,29 +524,13 @@ class Api extends Controller
 						# then add chapter to the updates list.
 						if($didAnyPageFail){
 
-							# Checks if the query will throw any
-							# exception.
-							try{
-							
-								Pages::where(['ChapterId','=',$newChapter->id])->delete();
-								Chapter::where(['id','=',$newChapter->id])->delete();
-							
-							}catch(QueryException $e){ 
-
-								# If query fails, there's nothing much
-								# that can be done. If the database
-								# failed now, there's no guarantee
-								# that it will be back anytime soon,
-								# what makes a busy wait deletion very
-								# uncertain and quite expensive.
-								# I'll look into a solution to this 
-								# problem soon, maybe using
-								# transactions. 
-								continue;
-
-							}
+							# If any page insertion failed, then
+							# rollback all queries.
+							DB::rollback();
 
 						}else{
+
+							DB::commit();
 
 							# Increments count of updated chapters of
 							# a specific manga.
@@ -578,29 +568,9 @@ class Api extends Controller
 
 			}
 
-			# Iterates through the updates and inserts them into the
-			# database.
-			foreach($updatesList as $update){
-
-				$newUpdate = new MangaUpdates();
-				$newUpdate->ChapterCount = $update['ChapterCount'];
-				$newUpdate->UpdatedAt = date("Y-M-d H:i:s");
-				$newUpdate->MangaName = $update['MangaName'];
-
-				# Although the updates may fail, the chapters and 
-				# pages shouldn't be removed because of that. It's a 
-				# internal error that should be addressed with 
-				# other approachs.
-				try{
-
-					$newUpdate->save();
-
-				}catch(QueryException $e){
-
-					continue;
-
-				}
-			}
+			# Dispatches a job that will make sure that all 
+			# updates will be inserted.
+			InsertUpdates::dispatch($updatesList);
 
 			# Now, we check what kinds of erros happened and we return
 			# the appropriate status code and response data.
