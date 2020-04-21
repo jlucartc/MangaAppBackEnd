@@ -180,7 +180,7 @@ class Api extends Controller
 				$newManga->Name = $manga->Name;
 				$newManga->Author = $manga->Author;
 				$newManga->Description = $manga->Description;
-				$newManga->UpdatedAt = date("Y-M-d H:i:s");
+				$newManga->UpdatedAt = date("Y-m-d H:i:s");
 
 				# If manga can't be saved, add manga to the 
 				# `rejectedMangas` array, because the server rejected
@@ -198,6 +198,8 @@ class Api extends Controller
 					$newManga->save();
 
 				}catch(QueryException $e){
+
+					dd($e);
 
 					# A server failure occured
 					$rejectedMangas[] = $manga;
@@ -448,7 +450,7 @@ class Api extends Controller
 				$newChapter->MangaName = $validChapter->MangaName;
 				$newChapter->Name = $validChapter->Name;
 				$newChapter->PageCount = $validChapter->PageCount;
-				$newChapter->PublishedAt = date("Y-M-d H:i:s");
+				$newChapter->PublishedAt = date("Y-m-d H:i:s");
 
 				# If chapter cannot be inserted, then we know that's 
 				# due to a server error, because all valid chapters
@@ -570,7 +572,8 @@ class Api extends Controller
 
 			# Dispatches a job that will make sure that all 
 			# updates will be inserted.
-			InsertUpdates::dispatch($updatesList);
+			# Tries 3 times to avoid execution loop.
+			InsertUpdates::dispatch($updatesList,3);
 
 			# Now, we check what kinds of erros happened and we return
 			# the appropriate status code and response data.

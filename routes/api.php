@@ -14,10 +14,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
 Route::post('insertMangas','Api@insertMangas')->name('insertMangas');
 
 Route::post('insertChapters','Api@insertChapters')->name('insertChapters');
@@ -27,8 +23,6 @@ Route::post('checkUpdates','Api@checkUpdates')->name('checkUpdates');
 Route::post('getUpdates','Api@getUpdates')->name('getUpdates');
 
 Route::get('getMangaList','Api@getMangaList')->name('getMangaList');
-
-#Route::post('loadMoreMangas','Api@loadMoreMangas')->name('loadMoreMangas');
 
 Route::post('search','Api@search')->name('search');
 

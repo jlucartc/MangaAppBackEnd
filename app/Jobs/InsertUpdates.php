@@ -16,15 +16,17 @@ class InsertUpdates implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $updates;
+    protected $tries;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct($updates)
+    public function __construct($updates,$tries)
     {
         $this->updates = $updates;
+        $this->tries = $tries;
     }
 
     /**
@@ -35,35 +37,39 @@ class InsertUpdates implements ShouldQueue
     public function handle()
     {
 
-        Log::info('Inserting Updates...');
+        if($this->tries > 0){
 
-        $copyOfUpdates = $this->updates;
+            Log::info('Inserting Updates...');
 
-        foreach($this->updates as $update){
+            $copyOfUpdates = $this->updates;
+
+            foreach($this->updates as $update){
 
 
-            $newUpdate = new MangaUpdates();
+                $newUpdate = new MangaUpdates();
 
-            $newUpdate->ChapterCount = $update['ChapterCount'];
-            $newUpdate->UpdatedAt = date("Y-M-d H:i:s");
-            $newUpdate->MangaName = $update['MangaName'];
+                $newUpdate->ChapterCount = $update['ChapterCount'];
+                $newUpdate->UpdatedAt = date("Y-m-d H:i:s");
+                $newUpdate->MangaName = $update['MangaName'];
 
-            try{
+                try{
 
-                $newUpdate->save();
-                unset($copyOfUpdates[array_search($update,$copyOfUpdates)]);
-                Log::info('Update saved...');
+                    $newUpdate->save();
+                    unset($copyOfUpdates[array_search($update,$copyOfUpdates)]);
+                    Log::info('Update saved...');
 
-            }catch(QueryException $e){
+                }catch(QueryException $e){
 
-                Log::info('Update failed. Trying again...');
-                InsertUpdates::dispatch($copyOfUpdates);
+                    Log::info('Update failed. Trying again...');
+                    Log::info($e);
+                    InsertUpdates::dispatch($copyOfUpdates,$this->tries-1);
+
+                }
+
 
             }
 
-
         }
-
 
 
     }
