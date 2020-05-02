@@ -20,7 +20,7 @@ class CreatePagesTable extends Migration
             $table->integer('ChapterNumber')->nullable(false);
             $table->string('PageLink')->nullable(false);
             $table->index(['Number','ChapterNumber','MangaName'])->unique('page_id');
-            $table->foreign('MangaName')->references('Name')->on('mangas');
+            $table->foreign('MangaName')->references('Name')->on('mangas')->onDelete('cascade')->onUpdate('cascade');
             $table->timestamps();
         });
     }

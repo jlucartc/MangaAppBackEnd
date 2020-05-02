@@ -9,6 +9,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Database\QueryException;
 use App\MangaUpdates;
+use App\Mangas;
 use Illuminate\Support\Facades\Log;
 
 class InsertUpdates implements ShouldQueue
@@ -54,6 +55,11 @@ class InsertUpdates implements ShouldQueue
 
                 try{
 
+                    $manga = Mangas::select('CoverLink')
+                    ->where('Name','=',$newUpdate->MangaName)
+                    ->first();
+
+                    $newUpdate->CoverLink = $manga->CoverLink;
                     $newUpdate->save();
                     unset($copyOfUpdates[array_search($update,$copyOfUpdates)]);
                     Log::info('Update saved...');

@@ -199,8 +199,6 @@ class Api extends Controller
 
 				}catch(QueryException $e){
 
-					dd($e);
-
 					# A server failure occured
 					$rejectedMangas[] = $manga;
 					$serverFailure = true;

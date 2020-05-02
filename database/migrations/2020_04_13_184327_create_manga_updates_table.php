@@ -18,7 +18,8 @@ class CreateMangaUpdatesTable extends Migration
             $table->integer('ChapterCount')->nullable(false);
             $table->datetimeTz('UpdatedAt')->nullable(false);
             $table->string('MangaName')->nullable(false);
-            $table->foreign('MangaName')->references('Name')->on('mangas');
+            $table->string('CoverLink')->nullable(false);
+            $table->foreign('MangaName')->references('Name')->on('mangas')->onDelete('cascade')->onUpdate('cascade');
             $table->timestamps();
         });
     }

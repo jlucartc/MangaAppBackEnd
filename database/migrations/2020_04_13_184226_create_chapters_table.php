@@ -21,7 +21,7 @@ class CreateChaptersTable extends Migration
             $table->integer("PageCount")->nullable(false);
             $table->datetimeTz("PublishedAt")->nullable(false);
             $table->index(['MangaName','Number','Name'])->unique('ChapterId');
-            $table->foreign('MangaName')->references('Name')->on('mangas');
+            $table->foreign('MangaName')->references('Name')->on('mangas')->onDelete('cascade')->onUpdate('cascade');
             $table->timestamps();
         });
     }
